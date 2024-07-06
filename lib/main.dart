@@ -34,7 +34,7 @@ class MoodDiary extends StatefulWidget {
 }
 
 class _MoodDiaryState extends State<MoodDiary> {
-  TextStyle LabelTextStyle = const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Color.fromARGB(256, 76, 76, 105));
+  TextStyle LabelTextStyle = const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Color.fromRGBO( 76, 76, 105, 1) );
   dynamic a = 1;
   BoxDecoration BackgroundContainerStyle =  const BoxDecoration(
     color: Colors.white,
@@ -107,7 +107,7 @@ class _MoodDiaryState extends State<MoodDiary> {
                           Text("Что чувствуешь?",
                             style: LabelTextStyle,
                           ),
-
+                          const SizedBox(height: 30),
                           const SizedBox(height: 30),
                           const Text("Уровень стресса",
                             style: TextStyle(
@@ -128,13 +128,28 @@ class _MoodDiaryState extends State<MoodDiary> {
                                     Text('Высокий'),
                                   ],
                                 ),
-
                               ],
                             ),
                           ),
                           const SizedBox(height: 30),
                           Text("Самооценка",
                             style: LabelTextStyle,
+                          ),
+                          Container(
+                            height: 118,
+                            width: MediaQuery.of(context).size.width,
+                            decoration:BackgroundContainerStyle,
+                            child:const  Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('Низкий'),
+                                    Text('Высокий'),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 30),
                           Text("Заметки",
