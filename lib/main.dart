@@ -35,7 +35,7 @@ class MoodDiary extends StatefulWidget {
 
 class _MoodDiaryState extends State<MoodDiary> {
   TextStyle LabelTextStyle = const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Color.fromARGB(256, 76, 76, 105));
-
+  dynamic a = 1;
   BoxDecoration BackgroundContainerStyle =  const BoxDecoration(
     color: Colors.white,
     borderRadius: BorderRadius.all(Radius.circular(13)),
