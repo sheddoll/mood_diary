@@ -1,11 +1,11 @@
 import 'dart:ui';
-
+import 'package:test_mood_diary/pages/StatisticPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
-
+import 'dart:async';
 void main() {
   runApp(const MyApp());
 }
@@ -17,28 +17,74 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
         useMaterial3: true,
       ),
-      home: const MoodDiary(title: 'Flutter Demo Home Page'),
+      home:  MoodDiary(),
+      title: 'MoodDiary',
+      initialRoute: '/MoodDiary', ///заменить навигацию в приложении
+      routes: {
+        '/MoodDiary': (context) =>MoodDiary(),
+        '/Statistic': (context) =>StatisticPage(),
+      }
+
     );
   }
 }
 
 class MoodDiary extends StatefulWidget {
-  const MoodDiary({super.key, required this.title});
-  final String title;
+  const MoodDiary({super.key});
+
 
   @override
   State<MoodDiary> createState() => _MoodDiaryState();
 }
 
 class _MoodDiaryState extends State<MoodDiary> {
-  void _calendarPressed(){}
-  void _savePressed(){}
+  ///переместить в отдельные файлы
+  void _emotionsPressed(int index) {
+    setState(() {
+      for (int i = 0; i < selectedEmotion.length; i++) {
+        selectedEmotion[i] = false;
+      }
+      selectedEmotion[index] = !selectedEmotion[index];
+    });
+    }///переместить в отдельные файлы
+  void _calendarPressed()async{
+    final dateTime = await showDatePicker(context: context, firstDate: DateTime(2000), lastDate: DateTime(_selectedDate.year+1),);
+    if ( dateTime!= null){
+      setState(() {
+        _selectedDate = dateTime;
+      });
+    }
+  }///переместить в отдельные файлы
+  void _saveDay(){}
+  _concretlyEmotionPressed(index){
+    setState(() {
+    });
+  }
+  final GlobalKey tooltipKey = GlobalKey();
+
+  void toggleTooltip() {
+    final dynamic tooltip = tooltipKey.currentState;
+    tooltip.ensureTooltipVisible();
+  }
+
+  void _savePressed(){ ///переместить в отдельные файлы
+    if(selectedEmotion.contains(true)){
+      _saveDay();
+    }
+    else{
+      toggleTooltip();
+    }
+  }
+
+
   TextStyle LabelTextStyle = const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Color.fromRGBO( 76, 76, 105, 1) );
-  BoxDecoration BackgroundContainerStyle =  const BoxDecoration(
+  TextStyle notLabelTextStyle = const TextStyle(fontSize: 11,color: Color.fromRGBO( 188,188,191, 1) );///переместить в отдельные файлы
+  BoxDecoration BackgroundContainerStyle =  const BoxDecoration(///переместить в отдельные файлы
     color: Colors.white,
     borderRadius: BorderRadius.all(Radius.circular(13)),
     boxShadow: [
@@ -50,28 +96,74 @@ class _MoodDiaryState extends State<MoodDiary> {
       )
     ],
   );
-  final List<Map<String, String>> emotions = [
-    {'name': 'Радость', 'image': 'assets/emotion-happy.png'}, // замените на ваши изображения
-    {'name': 'Страх', 'image': 'assets/emotion-fear.png'},
-    {'name': 'Бешенство', 'image': 'assets/emotion-angry.png'},
-    {'name': 'Грусть', 'image': 'assets/emotion-sad.png'},
-    {'name': 'Спокойствие', 'image': 'assets/emotion-chill.png'},
-    {'name': 'Сила', 'image': 'assets/emotion-power.png'},
-  ];
 
-  final List<bool> _selectedButton = <bool>[true, false];
-  double _firstSliderValue = 0;
-  double _secondSliderValue = 0;
+  final List<String> emotions = [
+    'Радость', 'Страх', 'Бешенство', 'Грусть', 'Спокойствие', 'Сила'
+  ];///переместить в отдельные файлы
+
+  final List concretlyEmotion =
+    ['Возбуждение', 'Восторг', 'Игривость', 'Наслаждение', 'Очарование', 'Осознанность', 'Смелость', 'Удовольствие', 'Чувственность', 'Энергичность', 'Экстравагантность'];
+
+  final List<String> emotionsImages =[
+    'lib/assets/emotion-happy.png',
+    'lib/assets/emotion-fear.png',
+    'lib/assets/emotion-angry.png',
+    'lib/assets/emotion-sad.png',
+    'lib/assets/emotion-chill.png',
+    'lib/assets/emotion-power.png'];///переместить в отдельные файлы
+  final List<bool> selectedEmotion = [false,false,false,false,false,false];
+  final List<bool> concretlySelectedEmotion = [false,false,false,false,false,false,false,false,false,false,false];
+  final List<bool> _selectedButton = [true, false];
   List<Widget> buttons = [
     const Row(children:[Icon(Icons.book, size: 20,),Text('Дневник настроения')]),
-    const Row(children:[Icon(Icons.auto_graph, size: 20,),Text('Статистика')])];
+    const Row(children:[Icon(Icons.auto_graph, size: 20,),Text('Статистика')])];///переместить в отдельные файлы
+
+
+
+  double _firstSliderValue = 0;
+  double _secondSliderValue = 0;
+
+  DateTime _selectedDate = DateTime.now();
+  String _dateTimeString='';
+  @override
+  void initState() {
+    super.initState();
+    _dateTimeString = _getDateTimeString();
+    Timer.periodic(Duration(seconds: 1), (Timer t) => _updateDateTime());
+  }
+
+  String _getDateTimeString() {
+    final now = DateTime.now();
+    final day = now.day.toString().padLeft(2, '0');
+    final month = _getMonthName(now.month);
+    final hour = now.hour.toString().padLeft(2, '0');
+    final minute = now.minute.toString().padLeft(2, '0');
+
+    return "$day $month $hour:$minute";
+  }
+
+  String _getMonthName(int month) {
+    const monthNames = [
+      "Января", "Февраля", "Марта", "Апреля", "Мая", "Июня",
+      "Июля", "Августа", "Сентября", "Октября", "Ноября", "Декабря"
+    ];
+    return monthNames[month - 1];
+  }
+
+  void _updateDateTime() {
+    setState(() {
+      _dateTimeString = _getDateTimeString();
+    });
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text("время"),
+          title: Text("$_dateTimeString",style: TextStyle(fontSize: 18,color:Color.fromRGBO(188, 188, 191, 1) )),
           elevation: 0,
           centerTitle: true,
           actions: <Widget>[
@@ -90,6 +182,13 @@ class _MoodDiaryState extends State<MoodDiary> {
                 ToggleButtons(
                   onPressed: (int index){
                     setState(() {
+                      switch(index){
+                        case 0:
+                          Navigator.pushNamed(context, '/MoodDiary');
+
+                        case 1:
+                          Navigator.pushNamed(context, '/Statistic'); ///Изменить способ навигации
+                      }
                       for (int i=0; i<_selectedButton.length;i++){
                         _selectedButton[i] = i == index;
                       }
@@ -118,15 +217,77 @@ class _MoodDiaryState extends State<MoodDiary> {
                             style: LabelTextStyle,
                           ),
                           const SizedBox(height: 20),
-                          ListView(
-                            children: [
-                              Container(
-                                child: Column(children: [
+                           SizedBox(
+                             height: 100,
+                             child: ListView.builder(
+                               scrollDirection: Axis.horizontal,
+                               itemCount: emotions.length,
 
-                                ],
+                               itemBuilder: (context, index){
+                                 return ElevatedButton(
+
+                                   style: ButtonStyle(
+                                     side: MaterialStateProperty.all(BorderSide(color: selectedEmotion[index] ? Colors.orange : Colors.transparent)),
+                                     elevation: MaterialStateProperty.all(0.3),
+                                     fixedSize: MaterialStateProperty.all(Size(83, 118))
+
+                                   ),
+                                     onPressed:(){
+                                     _emotionsPressed(index);
+                                     },
+
+                                      child: Flex(
+                                        direction: Axis.vertical,
+                                        mainAxisAlignment: MainAxisAlignment.start,
+
+                                        children: [
+                                        const SizedBox(height :12),
+                                          Container(
+                                            width: 83,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                              image: DecorationImage(
+                                                  fit: BoxFit.contain,
+                                                  image: AssetImage(emotionsImages[index])),),),
+                                         SizedBox(width: 83,
+                                          child :Text(emotions[index], ///поправить текст
+                                            maxLines: 1,
+                                            softWrap: false,
+                                            overflow: TextOverflow.fade,
+                                            textAlign: TextAlign.center,
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color: Color.fromRGBO(76, 76, 105, 1)
+
+                                          ),))
+                                        ],
+                                      )
+
+
+
+
+
+                                 );
+                               }
+
+                             ),
+                           ),
+                          const SizedBox(height: 30),
+                          Wrap(
+                            children: List.generate(concretlyEmotion.length, (index){
+                              return TextButton(
+                                style: ButtonStyle(
+                                  backgroundColor: MaterialStateProperty.all( concretlySelectedEmotion[index] ? Colors.orange : Colors.transparent),
+
+                                  shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(0))),
+                                  fixedSize: MaterialStateProperty.all(const Size(89,21)),
                                 ),
-                              )
-                            ],
+
+                                onPressed: _concretlyEmotionPressed(index),
+                                child: Text(concretlyEmotion[index],style: const TextStyle(fontSize: 11,color: Color.fromRGBO(76, 76, 105, 1)),));
+                            }
+
+                            ),
                           ),
                           const SizedBox(height: 30),
                           Text("Уровень стресса",
@@ -152,11 +313,11 @@ class _MoodDiaryState extends State<MoodDiary> {
                                       });
                                     }
                                 ),
-                                const Row(
+                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text('Низкий'),
-                                    Text('Высокий'),
+                                    Text('Низкий',style: notLabelTextStyle),
+                                    Text('Высокий',style: notLabelTextStyle),
                                   ],
                                 ),
                               ],
@@ -186,11 +347,11 @@ class _MoodDiaryState extends State<MoodDiary> {
                                     });
                                   }
                                   ),
-                                const Row(
+                                Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text('Неуверенность'),
-                                    Text('Уверенность'),
+                                    Text('Неуверенность',style: notLabelTextStyle),
+                                    Text('Уверенность',style: notLabelTextStyle),
                                   ],
                                 ),
                               ],
@@ -221,18 +382,22 @@ class _MoodDiaryState extends State<MoodDiary> {
                       ),
                     )
                 ),
-                ElevatedButton(
-                  
-                  onPressed: _savePressed,
-                  style: ButtonStyle(
-                    minimumSize: MaterialStateProperty.all(Size(MediaQuery.of(context).size.width*0.8,44)),
-                    elevation: MaterialStateProperty.all(0),
-                    backgroundColor: MaterialStateProperty.all(Colors.orange),
-                  ),
-                  child: const Text("Сохранить",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20
+                Tooltip(
+                  key: tooltipKey,
+                  message: 'Вы должны заполнить все, прежде чем сохранить',
+                  preferBelow: true,
+                  child: ElevatedButton(
+                    onPressed: _savePressed,
+                    style: ButtonStyle(
+                      minimumSize: MaterialStateProperty.all(Size(MediaQuery.of(context).size.width*0.8,44)),
+                      elevation: MaterialStateProperty.all(0),
+                      backgroundColor: MaterialStateProperty.all(Colors.orange),
+                    ),
+                    child: const Text("Сохранить",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20
+                      ),
                     ),
                   ),
                 ),
